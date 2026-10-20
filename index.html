@@ -135,11 +135,27 @@
       </button>
     </div>
 
+    <!-- PRESET MEALS: QUICK PICKS -->
+    <section id="presetMealsSection" class="mb-7 white-card rounded-3xl p-4 sm:p-6 border-slate-200" aria-labelledby="presetMealsTitle">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-4">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-600 mb-1">Quick picks</p>
+          <h2 id="presetMealsTitle" class="text-xl sm:text-2xl font-black tracking-tight text-slate-900">Too Lazy to Build Your Meal?</h2>
+          <p class="text-sm text-slate-500 mt-1">Pick a favorite and we’ll build it for you.</p>
+        </div>
+        <span class="text-[11px] font-semibold text-slate-400 mt-2 sm:mt-0">Tap a meal to customize it</span>
+      </div>
+      <div id="presetMealsGrid" class="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory sm:grid sm:grid-cols-2 xl:grid-cols-4 sm:overflow-visible" aria-label="Preset meals">
+        <!-- Cards are rendered from the existing MENU_DATA ingredient assets. -->
+      </div>
+      <div id="presetConfirmation" class="hidden mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800" role="status" aria-live="polite"></div>
+    </section>
+
     <!-- MAIN APP GRID -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
       <!-- LEFT COLUMN: MENU CUSTOMIZER & INGREDIENTS (7 COLS) -->
-      <div class="lg:col-span-7 space-y-6">
+      <div id="mealBuilder" class="lg:col-span-7 space-y-6">
 
         <!-- STEP 1: DISH TYPE SELECTOR -->
         <div class="white-card p-5 rounded-2xl space-y-3">
@@ -506,8 +522,8 @@
 
       proteins: [
         { id: "p1", name: "Grilled chicken breast", category: "wrap", baseGrams: 100, p: 31, c: 0, f: 3.6, cal: 165, img: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=300&q=80" },
-        { id: "p2", name: "Lean beef strips", category: "wrap", baseGrams: 100, p: 26, c: 0, f: 8, cal: 180, img: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=80" },
-        { id: "p3", name: "Grilled tofu", category: "wrap", baseGrams: 100, p: 16, c: 4, f: 8, cal: 145, img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80" },
+        { id: "p2", name: "Lean beef strips", category: "all", baseGrams: 100, p: 26, c: 0, f: 8, cal: 180, img: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=80" },
+        { id: "p3", name: "Grilled tofu", category: "all", baseGrams: 100, p: 16, c: 4, f: 8, cal: 145, img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80" },
         { id: "p4", name: "Sirloin Steak", category: "steak", baseGrams: 150, p: 41, c: 0, f: 15, cal: 315, img: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=300&q=80" },
         { id: "p5", name: "Chicken Breast", category: "steak", baseGrams: 150, p: 47, c: 0, f: 5, cal: 248, img: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=300&q=80" },
         { id: "p6", name: "Grilled Salmon", category: "steak", baseGrams: 150, p: 33, c: 0, f: 20, cal: 312, img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=300&q=80" },
@@ -533,7 +549,7 @@
       sauces: [
         { id: "s1", name: "Greek-yogurt garlic sauce", category: "wrap", baseGrams: 30, p: 2, c: 2, f: 1, cal: 25, img: "https://images.unsplash.com/photo-1571217865189-d922154a9380?auto=format&fit=crop&w=300&q=80" },
         { id: "s2", name: "Sriracha mayo", category: "wrap", baseGrams: 30, p: 0, c: 2, f: 13, cal: 130, img: "https://images.unsplash.com/photo-1472476443507-c7a5948772fc?auto=format&fit=crop&w=300&q=80" },
-        { id: "s3", name: "Teriyaki sauce", category: "wrap", baseGrams: 30, p: 1, c: 7, f: 0, cal: 35, img: "https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?auto=format&fit=crop&w=300&q=80" },
+        { id: "s3", name: "Teriyaki sauce", category: "all", baseGrams: 30, p: 1, c: 7, f: 0, cal: 35, img: "https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?auto=format&fit=crop&w=300&q=80" },
         { id: "s4", name: "Peppercorn Sauce", category: "steak", baseGrams: 50, p: 1, c: 4, f: 10, cal: 110, img: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=300&q=80" },
         { id: "s5", name: "Mushroom Sauce", category: "steak", baseGrams: 50, p: 2, c: 4, f: 7, cal: 90, img: "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=300&q=80" },
         { id: "s6", name: "Gravy", category: "steak", baseGrams: 50, p: 2, c: 5, f: 3, cal: 50, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=300&q=80" },
@@ -557,8 +573,22 @@
     let selectedAddons = {}; 
     let selectedSauce = null;
 
+    let selectedPresetName = null;
+    let applyingPreset = false;
+    const PRESET_MEALS = [
+      { id: 'teriyaki-chicken-bowl', name: 'Teriyaki Chicken Bowl', description: 'Steamed rice, chicken breast, broccoli & teriyaki sauce', menu: 'steak', carb: 'c5', protein: 'p5', addons: ['a7'], sauce: 's3', imageType: 'protein', imageId: 'p5' },
+      { id: 'garlic-chicken-wrap', name: 'Garlic Chicken Wrap', description: 'Whole-wheat tortilla, grilled chicken, fresh veg & garlic yogurt sauce', menu: 'wrap', carb: 'c1', protein: 'p1', addons: ['a1', 'a2'], sauce: 's1', imageType: 'protein', imageId: 'p1' },
+      { id: 'classic-pad-krapow', name: 'Classic Pad Krapow', description: 'Steamed rice, minced chicken, crispy egg & prik nam pla', menu: 'krapow', carb: 'c5', protein: 'p9', addons: ['a10'], sauce: 's9', imageType: 'protein', imageId: 'p9' },
+      { id: 'peppercorn-steak-plate', name: 'Peppercorn Steak Plate', description: 'Mashed potatoes, sirloin steak, broccoli & peppercorn sauce', menu: 'steak', carb: 'c3', protein: 'p4', addons: ['a7'], sauce: 's4', imageType: 'protein', imageId: 'p4' },
+      { id: 'teriyaki-salmon-bowl', name: 'Teriyaki Salmon Bowl', description: 'Steamed rice, grilled salmon, broccoli & teriyaki sauce', menu: 'steak', carb: 'c5', protein: 'p6', addons: ['a7'], sauce: 's3', imageType: 'protein', imageId: 'p6' },
+      { id: 'garlic-butter-beef', name: 'Garlic Butter Beef', description: 'Roasted potatoes, lean beef, sautéed mushrooms & garlic butter', menu: 'steak', carb: 'c4', protein: 'p2', addons: ['a8'], sauce: 's7', imageType: 'protein', imageId: 'p2' },
+      { id: 'vegetarian-power-bowl', name: 'Vegetarian Power Bowl', description: 'Steamed rice, grilled tofu, garden salad & chimichurri', menu: 'steak', carb: 'c5', protein: 'p3', addons: ['a5'], sauce: 's8', imageType: 'protein', imageId: 'p3' },
+      { id: 'spicy-chicken-wrap', name: 'Spicy Chicken Wrap', description: 'White tortilla, grilled chicken, fresh veg, fries & sriracha mayo', menu: 'wrap', carb: 'c2', protein: 'p1', addons: ['a1', 'a6'], sauce: 's2', imageType: 'protein', imageId: 'p1' }
+    ];
+
     // --- 3. INITIALIZATION & DISH SWITCHING ---
     window.onload = function() {
+      renderPresetMeals();
       selectMenu('wrap');
       setupCalcAutoUpdate();
     };
@@ -585,6 +615,7 @@
     }
 
     function selectMenu(menuType) {
+      markMealCustomized();
       currentMenu = menuType;
 
       // Update Dish Style UI Cards
@@ -736,8 +767,64 @@
       }
     }
 
+    // --- PRESET MEALS: USE THE SAME STATE AS THE EXISTING BUILDER ---
+    function renderPresetMeals() {
+      const container = document.getElementById('presetMealsGrid');
+      if (!container) return;
+      container.innerHTML = PRESET_MEALS.map(preset => {
+        const item = MENU_DATA[preset.imageType === 'protein' ? 'proteins' : 'carbs'].find(x => x.id === preset.imageId);
+        const active = selectedPresetName === preset.name;
+        return `
+          <button type="button" onclick="applyPreset('${preset.id}')" aria-pressed="${active}" class="preset-meal-card group flex-none w-[76vw] max-w-[250px] sm:w-auto sm:max-w-none text-left rounded-2xl border ${active ? 'border-emerald-600 ring-2 ring-emerald-100 bg-emerald-50/50' : 'border-slate-200 bg-white hover:border-emerald-300'} overflow-hidden snap-start transition-all shadow-sm hover:shadow-md">
+            <div class="h-32 sm:h-36 overflow-hidden bg-slate-100">
+              <img src="${item ? item.img : ''}" alt="${preset.name}" loading="lazy" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" onerror="this.onerror=null;this.src='https://placehold.co/400x240/f1f5f9/0f172a?text=Nutlicious'">
+            </div>
+            <div class="p-3.5">
+              <div class="font-black text-sm text-slate-900 leading-snug">${preset.name}</div>
+              <p class="text-[11px] leading-relaxed text-slate-500 mt-1.5 min-h-[42px]">${preset.description}</p>
+              <div class="mt-3 flex items-center justify-between text-[11px] font-extrabold ${active ? 'text-emerald-700' : 'text-emerald-600'}"><span>${active ? 'Selected' : 'Choose meal'}</span><i class="fa-solid fa-arrow-right"></i></div>
+            </div>
+          </button>`;
+      }).join('');
+    }
+
+    function applyPreset(presetId) {
+      const preset = PRESET_MEALS.find(p => p.id === presetId);
+      if (!preset) return;
+      applyingPreset = true;
+      currentMenu = preset.menu;
+      // Reuse the existing base-dish UI/state initialization, then replace defaults with this preset.
+      selectMenu(preset.menu);
+      selectedCarb = preset.carb;
+      carbFactor = 1.0;
+      selectedProtein = preset.protein;
+      proteinFactor = 1.0;
+      selectedAddons = {};
+      preset.addons.forEach(id => { selectedAddons[id] = 1.0; });
+      selectedSauce = preset.sauce;
+      selectedPresetName = preset.name;
+      applyingPreset = false;
+      renderCategoryOptions();
+      calculateTotals();
+      renderPresetMeals();
+      const confirmation = document.getElementById('presetConfirmation');
+      confirmation.textContent = `${preset.name} selected. Customize it below!`;
+      confirmation.classList.remove('hidden');
+      document.getElementById('mealBuilder').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function markMealCustomized() {
+      if (applyingPreset || !selectedPresetName) return;
+      selectedPresetName = null;
+      renderPresetMeals();
+      const confirmation = document.getElementById('presetConfirmation');
+      confirmation.textContent = 'Meal customized — your changes are applied to the nutrition and order summary.';
+      confirmation.classList.remove('hidden');
+    }
+
     // --- 5. SELECTION HANDLERS ---
     function selectCarb(id) {
+      markMealCustomized();
       selectedCarb = id;
       carbFactor = 1.0;
       renderCategoryOptions();
@@ -745,6 +832,7 @@
     }
 
     function selectProtein(id) {
+      markMealCustomized();
       selectedProtein = id;
       proteinFactor = 1.0;
       renderCategoryOptions();
@@ -752,21 +840,25 @@
     }
 
     function toggleAddon(id, checked) {
+      markMealCustomized();
       if (checked) {
         selectedAddons[id] = 1.0;
       } else {
         delete selectedAddons[id];
       }
+      renderCategoryOptions();
       calculateTotals();
     }
 
     function selectSauce(id) {
+      markMealCustomized();
       selectedSauce = selectedSauce === id ? null : id;
       renderCategoryOptions();
       calculateTotals();
     }
 
     function updateItemPortion(type, val) {
+      markMealCustomized();
       const numericVal = parseFloat(val);
       if (type === 'carb') {
         const item = MENU_DATA.carbs.find(c => c.id === selectedCarb);
