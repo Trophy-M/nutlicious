@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutlicious - Custom Meal & Calorie Builder</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            emerald: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+            amber: {
+              50: '#fffbe3',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .white-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+    .white-card-hover {
+      transition: all 0.2s ease-in-out;
+    }
+    .white-card-hover:hover {
+      border-color: #10b981;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.12);
+      transform: translateY(-2px);
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10b981;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12 antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- TOP HEADER / NAVBAR -->
+  <header class="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 py-3.5 shadow-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- Logo & Brand Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-emerald-400 flex items-center justify-center shadow-md shadow-emerald-500/20 text-white">
+          <i class="fa-solid fa-leaf text-xl"></i>
+        </div>
+        <div>
+          <span class="text-2xl font-black tracking-tight text-slate-900">Nut<span class="text-emerald-600">licious</span></span>
+          <span class="hidden sm:inline-block text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 ml-2">Customizer MVP</span>
+        </div>
+      </div>
+
+      <!-- Action & Controls Header Bar -->
+      <div class="flex items-center space-x-3 sm:space-x-4">
+        
+        <!-- Unit Switcher Toggle -->
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button id="unitServingsBtn" onclick="setUnitMode('servings')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-emerald-600 text-white shadow-sm">
+            <i class="fa-solid fa-utensils mr-1"></i> Servings
+          </button>
+          <button id="unitGramsBtn" onclick="setUnitMode('grams')" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all duration-200">
+            <i class="fa-solid fa-weight-scale mr-1"></i> Grams
+          </button>
+        </div>
+
+        <!-- Target Calorie Calculator Button -->
+        <button onclick="openCalcModal()" class="flex items-center space-x-1.5 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold shadow-md transition-all">
+          <i class="fa-solid fa-calculator text-emerald-400"></i>
+          <span class="hidden md:inline">Meal Target Calc</span>
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 pt-6">
+
+    <!-- TOP TARGET BANNER -->
+    <div id="targetBanner" class="mb-6 p-4 rounded-2xl white-card bg-gradient-to-r from-emerald-50/50 via-white to-emerald-50/50 flex flex-col md:flex-row items-center justify-between gap-4 border-emerald-200">
+      <div class="flex items-center space-x-4">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-600 border border-emerald-500 flex items-center justify-center text-white shrink-0 shadow-md shadow-emerald-600/20">
+          <i class="fa-solid fa-bullseye text-2xl"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Target Calorie Recommendation:</h2>
+            <span id="targetValueText" class="text-base font-black text-emerald-700">Not Set</span>
+          </div>
+          <p class="text-xs text-slate-600 font-medium">Calculate your ideal custom meal calories based on your body metrics and daily goals.</p>
+        </div>
+      </div>
+      <button onclick="openCalcModal()" class="w-full md:w-auto text-xs bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-300 font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm">
+        <i class="fa-solid fa-sliders mr-1.5"></i> Calculate Target
+      </button>
+    </div>
+
+    <!-- MAIN APP GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+      <!-- LEFT COLUMN: MENU CUSTOMIZER & INGREDIENTS (7 COLS) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- STEP 1: DISH TYPE SELECTOR -->
+        <div class="white-card p-5 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="block text-xs uppercase tracking-wider font-extrabold text-slate-500">
+              <span class="text-emerald-600">Step 1:</span> Choose Your Dish Style
+            </label>
+            <span class="text-[11px] text-slate-400 font-medium">Fully customizable from scratch</span>
+          </div>
+          
+          <div class="grid grid-cols-3 gap-3">
+            
+            <button onclick="selectMenu('wrap')" id="menuBtn-wrap" class="menu-tab-btn p-3 rounded-2xl border-2 transition-all flex flex-col items-center text-center space-y-2">
+              <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm bg-slate-100">
+                <img src="https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=300&q=80" alt="Wrap" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300/f1f5f9/0f172a?text=Wrap'">
+              </div>
+              <span class="text-xs font-black">Wrap</span>
+            </button>
+
+            <button onclick="selectMenu('steak')" id="menuBtn-steak" class="menu-tab-btn p-3 rounded-2xl border-2 transition-all flex flex-col items-center text-center space-y-2">
+              <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm bg-slate-100">
+                <img src="https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=300&q=80" alt="Steak" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300/f1f5f9/0f172a?text=Steak'">
+              </div>
+              <span class="text-xs font-black">Steak</span>
+            </button>
+
+            <button onclick="selectMenu('krapow')" id="menuBtn-krapow" class="menu-tab-btn p-3 rounded-2xl border-2 transition-all flex flex-col items-center text-center space-y-2">
+              <div class="w-16 h-16 rounded-xl overflow-hidden shadow-sm bg-slate-100">
+                <img src="https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=300&q=80" alt="Pad Krapow" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/300x300/f1f5f9/0f172a?text=Pad+Krapow'">
+              </div>
+              <span class="text-xs font-black">Pad Krapow</span>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- INTRINSIC BASE DISPLAY BANNER -->
+        <div class="white-card p-4 rounded-2xl border-amber-200 bg-amber-50/50 flex items-start space-x-3">
+          <div class="mt-0.5 text-amber-600 text-lg">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-800 uppercase tracking-wide">Pre-linked Intrinsic Base</span>
+              <span id="intrinsicCalTag" class="text-xs font-black bg-amber-200/60 text-amber-900 px-2.5 py-0.5 rounded-full border border-amber-300">27 kcal</span>
+            </div>
+            <p id="intrinsicNameText" class="text-xs font-semibold text-slate-800 mt-0.5">Wrap Sealing Oil & Grill Coat (3g)</p>
+            <div class="flex items-center space-x-4 text-[11px] text-slate-600 font-medium mt-1.5">
+              <span>Protein: <b id="intrinsicP" class="text-slate-900">0g</b></span>
+              <span>Carbs: <b id="intrinsicC" class="text-slate-900">0g</b></span>
+              <span>Fat: <b id="intrinsicF" class="text-amber-700">3g</b></span>
+              <span>Servings: <b id="intrinsicServ" class="text-slate-900">1.0x</b></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: MAIN CARB SELECTOR -->
+        <div class="white-card p-5 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs uppercase tracking-wider font-extrabold text-slate-500">
+              <span class="text-emerald-600">Step 2:</span> Select Your Base
+            </label>
+            <span id="carbPortionLabel" class="text-xs text-slate-500 font-semibold font-mono">1.0 Serving</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="carbContainer">
+            <!-- Dynamic Carb Cards -->
+          </div>
+
+          <!-- Quantity / Gram Slider Control -->
+          <div class="pt-3 border-t border-slate-100 flex items-center space-x-4">
+            <span class="text-xs font-bold text-slate-500 shrink-0">Portion Size:</span>
+            <input type="range" id="carbQtyInput" oninput="updateItemPortion('carb', this.value)" class="w-full accent-emerald-600 bg-slate-200 h-2 rounded-lg cursor-pointer">
+            <span id="carbQtyValDisplay" class="text-xs font-black text-emerald-700 shrink-0 font-mono w-20 text-right">1.0x</span>
+          </div>
+        </div>
+
+        <!-- STEP 3: MAIN PROTEIN SELECTOR -->
+        <div class="white-card p-5 rounded-2xl space-y-3">
+          <div class="flex items-center justify-between">
+            <label class="text-xs uppercase tracking-wider font-extrabold text-slate-500">
+              <span class="text-emerald-600">Step 3:</span> Choose Your Protein
+            </label>
+            <span id="proteinPortionLabel" class="text-xs text-slate-500 font-semibold font-mono">1.0 Serving</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="proteinContainer">
+            <!-- Dynamic Protein Cards -->
+          </div>
+
+          <!-- Quantity / Gram Slider Control -->
+          <div class="pt-3 border-t border-slate-100 flex items-center space-x-4">
+            <span class="text-xs font-bold text-slate-500 shrink-0">Portion Size:</span>
+            <input type="range" id="proteinQtyInput" oninput="updateItemPortion('protein', this.value)" class="w-full accent-emerald-600 bg-slate-200 h-2 rounded-lg cursor-pointer">
+            <span id="proteinQtyValDisplay" class="text-xs font-black text-emerald-700 shrink-0 font-mono w-20 text-right">1.0x</span>
+          </div>
+        </div>
+
+        <!-- STEP 4: ADD-ONS & SIDES -->
+        <div class="white-card p-5 rounded-2xl space-y-3">
+          <label class="block text-xs uppercase tracking-wider font-extrabold text-slate-500">
+            <span class="text-emerald-600">Step 4:</span> Add Fresh Sides & Toppings
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="addonsContainer">
+            <!-- Dynamic Addon Cards -->
+          </div>
+        </div>
+
+        <!-- STEP 5: SAUCES -->
+        <div class="white-card p-5 rounded-2xl space-y-3">
+          <label class="block text-xs uppercase tracking-wider font-extrabold text-slate-500">
+            <span class="text-emerald-600">Step 5:</span> Select Signature Dressing / Sauce
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="saucesContainer">
+            <!-- Dynamic Sauce Cards -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: NUTRITION DASHBOARD & SUMMARY (5 COLS) -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- MACRO & CALORIE LIVE DASHBOARD -->
+        <div class="white-card p-6 rounded-3xl sticky top-20 border-slate-200 shadow-xl space-y-5">
+          
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div>
+              <h3 class="text-lg font-black text-slate-900">Custom Meal Nutrition</h3>
+              <p class="text-xs text-slate-500 font-medium">Calculated dynamically via standard Atwater macro factors</p>
+            </div>
+            <button onclick="resetMeal()" class="text-xs text-slate-400 hover:text-red-500 transition-colors flex items-center space-x-1 font-bold">
+              <i class="fa-solid fa-rotate-left"></i>
+              <span>Reset</span>
+            </button>
+          </div>
+
+          <!-- Total Calorie Counter -->
+          <div class="my-4 text-center bg-emerald-50/50 p-5 rounded-2xl border border-emerald-100 relative">
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Total Estimated Energy</span>
+            <div class="flex items-center justify-center space-x-2">
+              <span id="totalCalDisplay" class="text-5xl font-black text-emerald-600 tracking-tight">0</span>
+              <span class="text-sm font-bold text-slate-500 uppercase">kcal</span>
+            </div>
+
+            <!-- Target Progress Gauge Bar -->
+            <div id="targetGaugeContainer" class="mt-4 pt-3 border-t border-emerald-200/60 hidden">
+              <div class="flex justify-between text-xs mb-1 font-bold">
+                <span class="text-slate-600">Target Match</span>
+                <span id="targetPctText" class="text-emerald-700">0%</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                <div id="targetProgressBar" class="bg-emerald-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+              <p id="targetStatusBadge" class="text-[11px] mt-2 font-bold text-center text-slate-500">Within recommended range</p>
+            </div>
+          </div>
+
+          <!-- MACRONUTRIENT BREAKDOWN BARS -->
+          <div class="space-y-3.5">
+            
+            <!-- Protein Bar -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-bold">
+                <span class="text-slate-700 flex items-center"><i class="fa-solid fa-drumstick-bite text-emerald-600 mr-2"></i> Protein (4 kcal/g)</span>
+                <span class="font-mono text-emerald-700" id="proteinVal">0g <span class="text-slate-400 font-normal">(0 kcal)</span></span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2">
+                <div id="proteinBar" class="bg-emerald-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Carbohydrates Bar -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-bold">
+                <span class="text-slate-700 flex items-center"><i class="fa-solid fa-wheat-awn text-sky-600 mr-2"></i> Carbs (4 kcal/g)</span>
+                <span class="font-mono text-sky-600" id="carbsVal">0g <span class="text-slate-400 font-normal">(0 kcal)</span></span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2">
+                <div id="carbsBar" class="bg-sky-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Fat Bar -->
+            <div class="space-y-1">
+              <div class="flex justify-between text-xs font-bold">
+                <span class="text-slate-700 flex items-center"><i class="fa-solid fa-droplet text-amber-500 mr-2"></i> Fats (9 kcal/g)</span>
+                <span class="font-mono text-amber-600" id="fatsVal">0g <span class="text-slate-400 font-normal">(0 kcal)</span></span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2">
+                <div id="fatsBar" class="bg-amber-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- DETAILED ORDER SUMMARY ITEMIZATION -->
+          <div class="mt-6 pt-4 border-t border-slate-100 space-y-3">
+            <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+              <span>Selected Custom Items</span>
+              <span id="unitModeBadge" class="text-[10px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded font-bold border border-emerald-200">SERVINGS MODE</span>
+            </h4>
+
+            <div id="orderItemsList" class="space-y-2 max-h-52 overflow-y-auto pr-1 text-xs">
+              <!-- Itemized receipt lines dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Order Action Button -->
+          <button onclick="checkoutOrder()" class="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+            <span>Confirm Custom Dish</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MEAL CALORIE TARGET CALCULATOR MODAL -->
+  <div id="calcModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="white-card max-w-lg w-full rounded-3xl p-6 space-y-5 shadow-2xl relative">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+            <i class="fa-solid fa-calculator text-lg"></i>
+          </div>
+          <h3 class="text-lg font-black text-slate-900">Recommended Meal Calorie Target</h3>
+        </div>
+        <button onclick="closeCalcModal()" class="text-slate-400 hover:text-slate-700 text-xl px-2">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Inputs -->
+      <div class="grid grid-cols-2 gap-4 text-xs">
+        
+        <!-- Gender -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Gender</label>
+          <select id="calcGender" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 font-semibold focus:border-emerald-500 outline-none">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        <!-- Age -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Age (Years)</label>
+          <input type="number" id="calcAge" value="25" min="15" max="100" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 font-mono font-bold focus:border-emerald-500 outline-none">
+        </div>
+
+        <!-- Weight -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Weight (kg)</label>
+          <input type="number" id="calcWeight" value="70" min="30" max="250" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 font-mono font-bold focus:border-emerald-500 outline-none">
+        </div>
+
+        <!-- Height -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Height (cm)</label>
+          <input type="number" id="calcHeight" value="175" min="100" max="230" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 font-mono font-bold focus:border-emerald-500 outline-none">
+        </div>
+
+        <!-- Activity Level -->
+        <div class="col-span-2">
+          <label class="block font-bold text-slate-700 mb-1">Daily Activity Level</label>
+          <select id="calcActivity" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 font-semibold focus:border-emerald-500 outline-none">
+            <option value="1.2">Sedentary (Desk job, little/no exercise)</option>
+            <option value="1.375" selected>Lightly Active (Light exercise 1-3 days/wk)</option>
+            <option value="1.55">Moderately Active (Moderate exercise 3-5 days/wk)</option>
+            <option value="1.725">Very Active (Hard exercise 6-7 days/wk)</option>
+          </select>
+        </div>
+
+        <!-- Fitness Goal -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Fitness Goal</label>
+          <select id="calcGoal" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 font-semibold focus:border-emerald-500 outline-none">
+            <option value="lose">Fat Loss (-500 kcal)</option>
+            <option value="maintain" selected>Weight Maintenance</option>
+            <option value="gain">Muscle Gain (+300 kcal)</option>
+          </select>
+        </div>
+
+        <!-- Meals Per Day -->
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Meals Per Day</label>
+          <select id="calcMeals" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-900 font-semibold focus:border-emerald-500 outline-none">
+            <option value="3" selected>3 Main Meals</option>
+            <option value="4">4 Meals / Day</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Calculation Result Output Box -->
+      <div id="calcResultBox" class="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 flex items-center justify-between">
+        <div>
+          <span class="text-[11px] uppercase font-bold text-slate-500 tracking-wider">Recommended Per Meal:</span>
+          <div class="text-2xl font-black text-emerald-700 font-mono"><span id="calcMealResult">710</span> <span class="text-xs text-slate-600 font-sans font-bold">kcal/meal</span></div>
+        </div>
+        <div class="text-right text-[11px] text-slate-500 font-medium">
+          <div>Estimated TDEE: <b id="calcTdeeVal" class="text-slate-800">2,130 kcal</b></div>
+          <div>BMR: <b id="calcBmrVal" class="text-slate-800">1,650 kcal</b></div>
+        </div>
+      </div>
+
+      <!-- Modal Footer Buttons -->
+      <div class="flex space-x-3 pt-2">
+        <button onclick="applyMealTarget()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3 rounded-xl transition-all text-xs shadow-md">
+          Apply Target to Customizer
+        </button>
+        <button onclick="closeCalcModal()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">
+          Cancel
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ORDER SUCCESS / CONFIRMATION MODAL -->
+  <div id="orderSuccessModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="white-card max-w-md w-full rounded-3xl p-6 text-center space-y-4 shadow-2xl border-emerald-200">
+      <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 border border-emerald-300 flex items-center justify-center mx-auto text-3xl">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3 class="text-xl font-black text-slate-900">Custom Meal Confirmed!</h3>
+      <p class="text-xs text-slate-600 font-medium">Your customized portioned meal has been recorded with exact macronutrient specs.</p>
+      
+      <div id="checkoutSummaryBox" class="bg-slate-50 p-4 rounded-2xl text-left text-xs space-y-1.5 border border-slate-200">
+        <!-- Receipt details populated here -->
+      </div>
+
+      <button onclick="closeSuccessModal()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-all text-xs shadow-md">
+        Customize Another Dish
+      </button>
+    </div>
+  </div>
+
+
+  <!-- APPLICATION JAVASCRIPT LOGIC -->
+  <script>
+    // --- 1. DATASET DEFINITIONS WITH ISOLATED FOOD IMAGES ---
+    const MENU_DATA = {
+      intrinsic: {
+        wrap: { name: "Wrap Sealing Oil & Grill Coat", baseGrams: 3, p: 0.0, c: 0.0, f: 3.0, cal: 27 },
+        steak: { name: "Sear Butter & Herb Aromatics", baseGrams: 7, p: 0.1, c: 0.5, f: 6.0, cal: 56 },
+        krapow: { name: "Stir-fry Wok Oil, Holy Basil & Garlic Paste", baseGrams: 24, p: 0.3, c: 1.9, f: 10.1, cal: 100 }
+      },
+
+      carbs: [
+        { id: "c1", name: "Whole-wheat tortilla", category: "wrap", baseGrams: 60, p: 6, c: 32, f: 5, cal: 190, img: "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?auto=format&fit=crop&w=300&q=80" },
+        { id: "c2", name: "White tortilla", category: "wrap", baseGrams: 60, p: 5, c: 34, f: 5, cal: 200, img: "https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?auto=format&fit=crop&w=300&q=80" },
+        { id: "c3", name: "Mashed Potatoes", category: "steak", baseGrams: 150, p: 3, c: 27, f: 5, cal: 165, img: "https://images.unsplash.com/photo-1514944288352-fffac99f0bdf?auto=format&fit=crop&w=300&q=80" },
+        { id: "c4", name: "Roasted Potatoes", category: "steak", baseGrams: 150, p: 3, c: 30, f: 6, cal: 180, img: "https://images.unsplash.com/photo-1592417817098-8f3d6ef23a28?auto=format&fit=crop&w=300&q=80" },
+        { id: "c5", name: "Steamed Rice", category: "all", baseGrams: 150, p: 4, c: 42, f: 0.5, cal: 195, img: "https://images.unsplash.com/photo-1516684732162-798a0062be99?auto=format&fit=crop&w=300&q=80" }
+      ],
+
+      proteins: [
+        { id: "p1", name: "Grilled chicken breast", category: "wrap", baseGrams: 100, p: 31, c: 0, f: 3.6, cal: 165, img: "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=300&q=80" },
+        { id: "p2", name: "Lean beef strips", category: "wrap", baseGrams: 100, p: 26, c: 0, f: 8, cal: 180, img: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=300&q=80" },
+        { id: "p3", name: "Grilled tofu", category: "wrap", baseGrams: 100, p: 16, c: 4, f: 8, cal: 145, img: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=300&q=80" },
+        { id: "p4", name: "Sirloin Steak", category: "steak", baseGrams: 150, p: 41, c: 0, f: 15, cal: 315, img: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=300&q=80" },
+        { id: "p5", name: "Chicken Breast", category: "steak", baseGrams: 150, p: 47, c: 0, f: 5, cal: 248, img: "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=300&q=80" },
+        { id: "p6", name: "Grilled Salmon", category: "steak", baseGrams: 150, p: 33, c: 0, f: 20, cal: 312, img: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=300&q=80" },
+        { id: "p7", name: "Grilled Cod", category: "steak", baseGrams: 150, p: 36, c: 0, f: 1, cal: 158, img: "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=300&q=80" },
+        { id: "p8", name: "Pork Tenderloin", category: "steak", baseGrams: 150, p: 41, c: 0, f: 9, cal: 250, img: "https://images.unsplash.com/photo-1432139555190-58524dae6a55?auto=format&fit=crop&w=300&q=80" },
+        { id: "p9", name: "Minced Chicken", category: "krapow", baseGrams: 120, p: 30, c: 0, f: 6, cal: 174, img: "https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=300&q=80" },
+        { id: "p10", name: "Minced Beef", category: "krapow", baseGrams: 120, p: 28, c: 0, f: 10, cal: 202, img: "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&w=300&q=80" }
+      ],
+
+      addons: [
+        { id: "a1", name: "Lettuce + cabbage", category: "wrap", baseGrams: 50, p: 0.6, c: 2.5, f: 0.1, cal: 12, img: "https://images.unsplash.com/photo-1556782506-64a496843343?auto=format&fit=crop&w=300&q=80" },
+        { id: "a2", name: "Tomato + cucumber", category: "wrap", baseGrams: 80, p: 0.7, c: 3.2, f: 0.1, cal: 15, img: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&w=300&q=80" },
+        { id: "a3", name: "Sweet Corn", category: "all", baseGrams: 50, p: 1.5, c: 9.5, f: 0.7, cal: 43, img: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&w=300&q=80" },
+        { id: "a4", name: "Caesar Salad", category: "steak", baseGrams: 100, p: 5, c: 8, f: 12, cal: 160, img: "https://images.unsplash.com/photo-1550304943-4f24f54ddde9?auto=format&fit=crop&w=300&q=80" },
+        { id: "a5", name: "Garden Salad", category: "steak", baseGrams: 100, p: 1, c: 5, f: 0.5, cal: 30, img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=300&q=80" },
+        { id: "a6", name: "French Fries", category: "steak", baseGrams: 100, p: 3, c: 41, f: 15, cal: 312, img: "https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=300&q=80" },
+        { id: "a7", name: "Steamed Broccoli", category: "all", baseGrams: 100, p: 3, c: 7, f: 0.4, cal: 35, img: "https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?auto=format&fit=crop&w=300&q=80" },
+        { id: "a8", name: "Sauteed Mushrooms", category: "all", baseGrams: 100, p: 3, c: 5, f: 4, cal: 70, img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=300&q=80" },
+        { id: "a9", name: "Garlic Bread", category: "steak", baseGrams: 40, p: 4, c: 20, f: 5, cal: 140, img: "https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?auto=format&fit=crop&w=300&q=80" },
+        { id: "a10", name: "Crispy Fried Egg", category: "krapow", baseGrams: 50, p: 6.3, c: 0.4, f: 7.0, cal: 90, img: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=300&q=80" }
+      ],
+
+      sauces: [
+        { id: "s1", name: "Greek-yogurt garlic sauce", category: "wrap", baseGrams: 30, p: 2, c: 2, f: 1, cal: 25, img: "https://images.unsplash.com/photo-1571217865189-d922154a9380?auto=format&fit=crop&w=300&q=80" },
+        { id: "s2", name: "Sriracha mayo", category: "wrap", baseGrams: 30, p: 0, c: 2, f: 13, cal: 130, img: "https://images.unsplash.com/photo-1472476443507-c7a5948772fc?auto=format&fit=crop&w=300&q=80" },
+        { id: "s3", name: "Teriyaki sauce", category: "wrap", baseGrams: 30, p: 1, c: 7, f: 0, cal: 35, img: "https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?auto=format&fit=crop&w=300&q=80" },
+        { id: "s4", name: "Peppercorn Sauce", category: "steak", baseGrams: 50, p: 1, c: 4, f: 10, cal: 110, img: "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=300&q=80" },
+        { id: "s5", name: "Mushroom Sauce", category: "steak", baseGrams: 50, p: 2, c: 4, f: 7, cal: 90, img: "https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?auto=format&fit=crop&w=300&q=80" },
+        { id: "s6", name: "Gravy", category: "steak", baseGrams: 50, p: 2, c: 5, f: 3, cal: 50, img: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=300&q=80" },
+        { id: "s7", name: "Garlic Butter", category: "steak", baseGrams: 20, p: 0, c: 0, f: 16, cal: 145, img: "https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?auto=format&fit=crop&w=300&q=80" },
+        { id: "s8", name: "Chimichurri", category: "steak", baseGrams: 30, p: 0.5, c: 2, f: 10, cal: 100, img: "https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?auto=format&fit=crop&w=300&q=80" },
+        { id: "s9", name: "Prik Nam Pla", category: "krapow", baseGrams: 15, p: 0.5, c: 1, f: 0, cal: 10, img: "https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=300&q=80" }
+      ]
+    };
+
+    // --- 2. APPLICATION STATE ---
+    let currentMenu = 'wrap'; 
+    let unitMode = 'servings'; 
+    let targetCalories = null;
+
+    let selectedCarb = null;
+    let carbFactor = 1.0;
+
+    let selectedProtein = null;
+    let proteinFactor = 1.0;
+
+    let selectedAddons = {}; 
+    let selectedSauce = null;
+
+    // --- 3. INITIALIZATION & DISH SWITCHING ---
+    window.onload = function() {
+      selectMenu('wrap');
+      setupCalcAutoUpdate();
+    };
+
+    function setUnitMode(mode) {
+      unitMode = mode;
+      
+      const servBtn = document.getElementById('unitServingsBtn');
+      const gramBtn = document.getElementById('unitGramsBtn');
+      const unitBadge = document.getElementById('unitModeBadge');
+
+      if (mode === 'servings') {
+        servBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-emerald-600 text-white shadow-sm";
+        gramBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all duration-200";
+        unitBadge.innerText = "SERVINGS MODE";
+      } else {
+        gramBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 bg-emerald-600 text-white shadow-sm";
+        servBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition-all duration-200";
+        unitBadge.innerText = "GRAMS MODE";
+      }
+
+      renderCategoryOptions();
+      calculateTotals();
+    }
+
+    function selectMenu(menuType) {
+      currentMenu = menuType;
+
+      // Update Dish Style UI Cards
+      ['wrap', 'steak', 'krapow'].forEach(m => {
+        const btn = document.getElementById(`menuBtn-${m}`);
+        if (m === menuType) {
+          btn.className = "menu-tab-btn p-3 rounded-2xl border-2 border-emerald-600 bg-emerald-50/60 text-slate-900 flex flex-col items-center text-center space-y-2 shadow-md";
+        } else {
+          btn.className = "menu-tab-btn p-3 rounded-2xl border-2 border-slate-200 bg-white text-slate-500 hover:border-slate-300 flex flex-col items-center text-center space-y-2";
+        }
+      });
+
+      // Update Intrinsic Base display
+      const intr = MENU_DATA.intrinsic[menuType];
+      document.getElementById('intrinsicNameText').innerText = `${intr.name} (${intr.baseGrams}g)`;
+      document.getElementById('intrinsicCalTag').innerText = `${intr.cal} kcal`;
+      document.getElementById('intrinsicP').innerText = `${intr.p}g`;
+      document.getElementById('intrinsicC').innerText = `${intr.c}g`;
+      document.getElementById('intrinsicF').innerText = `${intr.f}g`;
+
+      autoSelectCategoryDefaults();
+      renderCategoryOptions();
+      calculateTotals();
+    }
+
+    function autoSelectCategoryDefaults() {
+      const availCarbs = MENU_DATA.carbs.filter(c => c.category === currentMenu || c.category === 'all');
+      selectedCarb = availCarbs.length > 0 ? availCarbs[0].id : null;
+      carbFactor = 1.0;
+
+      const availProteins = MENU_DATA.proteins.filter(p => p.category === currentMenu || p.category === 'all');
+      selectedProtein = availProteins.length > 0 ? availProteins[0].id : null;
+      proteinFactor = 1.0;
+
+      selectedAddons = {};
+
+      const availSauces = MENU_DATA.sauces.filter(s => s.category === currentMenu || s.category === 'all');
+      selectedSauce = availSauces.length > 0 ? availSauces[0].id : null;
+    }
+
+    // --- 4. RENDER INGREDIENT CARDS WITH ISOLATED FOOD PHOTOS ---
+    function renderCategoryOptions() {
+      // 1. Render Carbs
+      const carbContainer = document.getElementById('carbContainer');
+      const availCarbs = MENU_DATA.carbs.filter(c => c.category === currentMenu || c.category === 'all');
+      
+      carbContainer.innerHTML = availCarbs.map(item => {
+        const isSelected = selectedCarb === item.id;
+        const portionText = unitMode === 'servings' ? `${item.baseGrams}g / serv` : `Base ${item.baseGrams}g`;
+        return `
+          <button onclick="selectCarb('${item.id}')" class="p-2.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${isSelected ? 'border-emerald-600 bg-emerald-50/50 text-slate-900 shadow-sm ring-1 ring-emerald-600' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}">
+            <img src="${item.img}" alt="${item.name}" class="w-12 h-12 rounded-xl object-cover shrink-0 bg-slate-100" onerror="this.src='https://placehold.co/200x200/f1f5f9/0f172a?text=Food'">
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-bold truncate">${item.name}</div>
+              <div class="text-[10px] text-slate-500 font-medium">${portionText}</div>
+              <div class="text-[10px] text-slate-400 font-mono">P:${item.p} C:${item.c} F:${item.f}</div>
+            </div>
+            <div class="text-xs font-black text-emerald-700 font-mono pr-1">${item.cal} kcal</div>
+          </button>
+        `;
+      }).join('');
+
+      const carbItem = MENU_DATA.carbs.find(c => c.id === selectedCarb);
+      setupSlider('carbQtyInput', 'carbQtyValDisplay', carbItem, carbFactor);
+
+      // 2. Render Proteins
+      const proteinContainer = document.getElementById('proteinContainer');
+      const availProteins = MENU_DATA.proteins.filter(p => p.category === currentMenu || p.category === 'all');
+      
+      proteinContainer.innerHTML = availProteins.map(item => {
+        const isSelected = selectedProtein === item.id;
+        const portionText = unitMode === 'servings' ? `${item.baseGrams}g / serv` : `Base ${item.baseGrams}g`;
+        return `
+          <button onclick="selectProtein('${item.id}')" class="p-2.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${isSelected ? 'border-emerald-600 bg-emerald-50/50 text-slate-900 shadow-sm ring-1 ring-emerald-600' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}">
+            <img src="${item.img}" alt="${item.name}" class="w-12 h-12 rounded-xl object-cover shrink-0 bg-slate-100" onerror="this.src='https://placehold.co/200x200/f1f5f9/0f172a?text=Protein'">
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-bold truncate">${item.name}</div>
+              <div class="text-[10px] text-slate-500 font-medium">${portionText}</div>
+              <div class="text-[10px] text-slate-400 font-mono">P:${item.p} C:${item.c} F:${item.f}</div>
+            </div>
+            <div class="text-xs font-black text-emerald-700 font-mono pr-1">${item.cal} kcal</div>
+          </button>
+        `;
+      }).join('');
+
+      const proteinItem = MENU_DATA.proteins.find(p => p.id === selectedProtein);
+      setupSlider('proteinQtyInput', 'proteinQtyValDisplay', proteinItem, proteinFactor);
+
+      // 3. Render Add-ons
+      const addonsContainer = document.getElementById('addonsContainer');
+      const availAddons = MENU_DATA.addons.filter(a => a.category === currentMenu || a.category === 'all');
+
+      addonsContainer.innerHTML = availAddons.map(item => {
+        const isChecked = selectedAddons.hasOwnProperty(item.id);
+        return `
+          <label class="p-2.5 rounded-2xl border transition-all flex items-center space-x-3 cursor-pointer ${isChecked ? 'border-emerald-600 bg-emerald-50/50 text-slate-900 shadow-sm ring-1 ring-emerald-600' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}">
+            <input type="checkbox" onchange="toggleAddon('${item.id}', this.checked)" ${isChecked ? 'checked' : ''} class="rounded border-slate-300 text-emerald-600 focus:ring-0 accent-emerald-600 w-4 h-4">
+            <img src="${item.img}" alt="${item.name}" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100" onerror="this.src='https://placehold.co/200x200/f1f5f9/0f172a?text=Side'">
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-bold truncate">${item.name}</div>
+              <div class="text-[10px] text-slate-500 font-medium">${item.baseGrams}g portion</div>
+            </div>
+            <div class="text-xs font-black text-emerald-700 font-mono pr-1">+${item.cal} kcal</div>
+          </label>
+        `;
+      }).join('');
+
+      // 4. Render Sauces
+      const saucesContainer = document.getElementById('saucesContainer');
+      const availSauces = MENU_DATA.sauces.filter(s => s.category === currentMenu || s.category === 'all');
+
+      saucesContainer.innerHTML = availSauces.map(item => {
+        const isSelected = selectedSauce === item.id;
+        return `
+          <button onclick="selectSauce('${item.id}')" class="p-2.5 rounded-2xl border text-left transition-all flex items-center space-x-3 ${isSelected ? 'border-emerald-600 bg-emerald-50/50 text-slate-900 shadow-sm ring-1 ring-emerald-600' : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'}">
+            <img src="${item.img}" alt="${item.name}" class="w-11 h-11 rounded-xl object-cover shrink-0 bg-slate-100" onerror="this.src='https://placehold.co/200x200/f1f5f9/0f172a?text=Sauce'">
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-bold truncate">${item.name}</div>
+              <div class="text-[10px] text-slate-500 font-medium">${item.baseGrams}g portion</div>
+            </div>
+            <div class="text-xs font-black text-emerald-700 font-mono pr-1">${item.cal} kcal</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function setupSlider(inputId, displayId, item, currentFactor) {
+      const input = document.getElementById(inputId);
+      const display = document.getElementById(displayId);
+
+      if (!item) return;
+
+      if (unitMode === 'servings') {
+        input.min = "0.5";
+        input.max = "2.5";
+        input.step = "0.5";
+        input.value = currentFactor;
+        display.innerText = `${currentFactor}x serv`;
+      } else {
+        const minGrams = Math.round(item.baseGrams * 0.5);
+        const maxGrams = Math.round(item.baseGrams * 2.5);
+        const currentGrams = Math.round(item.baseGrams * currentFactor);
+
+        input.min = minGrams;
+        input.max = maxGrams;
+        input.step = "5";
+        input.value = currentGrams;
+        display.innerText = `${currentGrams}g`;
+      }
+    }
+
+    // --- 5. SELECTION HANDLERS ---
+    function selectCarb(id) {
+      selectedCarb = id;
+      carbFactor = 1.0;
+      renderCategoryOptions();
+      calculateTotals();
+    }
+
+    function selectProtein(id) {
+      selectedProtein = id;
+      proteinFactor = 1.0;
+      renderCategoryOptions();
+      calculateTotals();
+    }
+
+    function toggleAddon(id, checked) {
+      if (checked) {
+        selectedAddons[id] = 1.0;
+      } else {
+        delete selectedAddons[id];
+      }
+      calculateTotals();
+    }
+
+    function selectSauce(id) {
+      selectedSauce = selectedSauce === id ? null : id;
+      renderCategoryOptions();
+      calculateTotals();
+    }
+
+    function updateItemPortion(type, val) {
+      const numericVal = parseFloat(val);
+      if (type === 'carb') {
+        const item = MENU_DATA.carbs.find(c => c.id === selectedCarb);
+        carbFactor = unitMode === 'servings' ? numericVal : numericVal / item.baseGrams;
+        document.getElementById('carbQtyValDisplay').innerText = unitMode === 'servings' ? `${carbFactor}x serv` : `${Math.round(numericVal)}g`;
+      } else if (type === 'protein') {
+        const item = MENU_DATA.proteins.find(p => p.id === selectedProtein);
+        proteinFactor = unitMode === 'servings' ? numericVal : numericVal / item.baseGrams;
+        document.getElementById('proteinQtyValDisplay').innerText = unitMode === 'servings' ? `${proteinFactor}x serv` : `${Math.round(numericVal)}g`;
+      }
+      calculateTotals();
+    }
+
+    // --- 6. CALORIE & MACRO CALCULATOR CORE ENGINE ---
+    function calculateTotals() {
+      let totalP = 0, totalC = 0, totalF = 0, totalCal = 0;
+      let orderLines = [];
+
+      // A. Intrinsic Base
+      const intr = MENU_DATA.intrinsic[currentMenu];
+      totalP += intr.p;
+      totalC += intr.c;
+      totalF += intr.f;
+      totalCal += intr.cal;
+
+      orderLines.push({
+        name: intr.name,
+        portion: `${intr.baseGrams}g (Auto Base)`,
+        cal: intr.cal,
+        p: intr.p, c: intr.c, f: intr.f,
+        isBase: true
+      });
+
+      // B. Selected Carb Base
+      if (selectedCarb) {
+        const cItem = MENU_DATA.carbs.find(c => c.id === selectedCarb);
+        const p = cItem.p * carbFactor;
+        const c = cItem.c * carbFactor;
+        const f = cItem.f * carbFactor;
+        const cal = Math.round((p * 4) + (c * 4) + (f * 9));
+
+        totalP += p; totalC += c; totalF += f; totalCal += cal;
+
+        const portionLabel = unitMode === 'servings' ? `${carbFactor} Serv` : `${Math.round(cItem.baseGrams * carbFactor)}g`;
+        orderLines.push({ name: cItem.name, portion: portionLabel, cal, p, c, f });
+      }
+
+      // C. Selected Protein
+      if (selectedProtein) {
+        const pItem = MENU_DATA.proteins.find(p => p.id === selectedProtein);
+        const p = pItem.p * proteinFactor;
+        const c = pItem.c * proteinFactor;
+        const f = pItem.f * proteinFactor;
+        const cal = Math.round((p * 4) + (c * 4) + (f * 9));
+
+        totalP += p; totalC += c; totalF += f; totalCal += cal;
+
+        const portionLabel = unitMode === 'servings' ? `${proteinFactor} Serv` : `${Math.round(pItem.baseGrams * proteinFactor)}g`;
+        orderLines.push({ name: pItem.name, portion: portionLabel, cal, p, c, f });
+      }
+
+      // D. Selected Add-ons
+      Object.keys(selectedAddons).forEach(addonId => {
+        const aItem = MENU_DATA.addons.find(a => a.id === addonId);
+        const factor = selectedAddons[addonId];
+        const p = aItem.p * factor;
+        const c = aItem.c * factor;
+        const f = aItem.f * factor;
+        const cal = Math.round((p * 4) + (c * 4) + (f * 9));
+
+        totalP += p; totalC += c; totalF += f; totalCal += cal;
+
+        orderLines.push({ name: aItem.name, portion: `${aItem.baseGrams}g`, cal, p, c, f });
+      });
+
+      // E. Selected Sauce
+      if (selectedSauce) {
+        const sItem = MENU_DATA.sauces.find(s => s.id === selectedSauce);
+        totalP += sItem.p;
+        totalC += sItem.c;
+        totalF += sItem.f;
+        totalCal += sItem.cal;
+
+        orderLines.push({ name: sItem.name, portion: `${sItem.baseGrams}g`, cal: sItem.cal, p: sItem.p, c: sItem.c, f: sItem.f });
+      }
+
+      totalP = Math.round(totalP * 10) / 10;
+      totalC = Math.round(totalC * 10) / 10;
+      totalF = Math.round(totalF * 10) / 10;
+
+      document.getElementById('totalCalDisplay').innerText = totalCal;
+      
+      const pCal = Math.round(totalP * 4);
+      const cCal = Math.round(totalC * 4);
+      const fCal = Math.round(totalF * 9);
+
+      document.getElementById('proteinVal').innerHTML = `${totalP}g <span class="text-slate-400 font-normal">(${pCal} kcal)</span>`;
+      document.getElementById('carbsVal').innerHTML = `${totalC}g <span class="text-slate-400 font-normal">(${cCal} kcal)</span>`;
+      document.getElementById('fatsVal').innerHTML = `${totalF}g <span class="text-slate-400 font-normal">(${fCal} kcal)</span>`;
+
+      document.getElementById('proteinBar').style.width = `${Math.min(100, (totalP / 80) * 100)}%`;
+      document.getElementById('carbsBar').style.width = `${Math.min(100, (totalC / 100) * 100)}%`;
+      document.getElementById('fatsBar').style.width = `${Math.min(100, (totalF / 60) * 100)}%`;
+
+      const orderContainer = document.getElementById('orderItemsList');
+      orderContainer.innerHTML = orderLines.map(line => `
+        <div class="flex items-center justify-between p-2 rounded-xl ${line.isBase ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200'}">
+          <div>
+            <div class="font-bold text-slate-800 ${line.isBase ? 'text-amber-800' : ''}">${line.name}</div>
+            <div class="text-[10px] text-slate-500 font-medium">${line.portion} • P:${line.p.toFixed(1)}g C:${line.c.toFixed(1)}g F:${line.f.toFixed(1)}g</div>
+          </div>
+          <div class="font-mono font-black text-emerald-700">${line.cal} kcal</div>
+        </div>
+      `).join('');
+
+      updateTargetGauge(totalCal);
+    }
+
+    // --- 7. MEAL TARGET CALCULATOR (Mifflin-St Jeor) ---
+    function setupCalcAutoUpdate() {
+      ['calcGender', 'calcAge', 'calcWeight', 'calcHeight', 'calcActivity', 'calcGoal', 'calcMeals'].forEach(id => {
+        document.getElementById(id).addEventListener('change', runMifflinCalc);
+        document.getElementById(id).addEventListener('input', runMifflinCalc);
+      });
+      runMifflinCalc();
+    }
+
+    function runMifflinCalc() {
+      const gender = document.getElementById('calcGender').value;
+      const age = parseFloat(document.getElementById('calcAge').value) || 25;
+      const weight = parseFloat(document.getElementById('calcWeight').value) || 70;
+      const height = parseFloat(document.getElementById('calcHeight').value) || 175;
+      const activity = parseFloat(document.getElementById('calcActivity').value) || 1.375;
+      const goal = document.getElementById('calcGoal').value;
+      const meals = parseFloat(document.getElementById('calcMeals').value) || 3;
+
+      let bmr = (10 * weight) + (6.25 * height) - (5 * age);
+      bmr += (gender === 'male') ? 5 : -161;
+
+      let tdee = bmr * activity;
+
+      let targetDaily = tdee;
+      if (goal === 'lose') targetDaily -= 500;
+      if (goal === 'gain') targetDaily += 300;
+
+      const perMeal = Math.round(targetDaily / meals);
+
+      document.getElementById('calcBmrVal').innerText = `${Math.round(bmr)} kcal`;
+      document.getElementById('calcTdeeVal').innerText = `${Math.round(tdee)} kcal`;
+      document.getElementById('calcMealResult').innerText = perMeal;
+    }
+
+    function applyMealTarget() {
+      const perMeal = parseInt(document.getElementById('calcMealResult').innerText);
+      targetCalories = perMeal;
+
+      document.getElementById('targetValueText').innerText = `${targetCalories} kcal / meal`;
+      document.getElementById('targetGaugeContainer').classList.remove('hidden');
+
+      closeCalcModal();
+      calculateTotals();
+    }
+
+    function updateTargetGauge(currentCal) {
+      if (!targetCalories) return;
+
+      const pct = Math.min(150, Math.round((currentCal / targetCalories) * 100));
+      const progressBar = document.getElementById('targetProgressBar');
+      const pctText = document.getElementById('targetPctText');
+      const badge = document.getElementById('targetStatusBadge');
+
+      pctText.innerText = `${pct}%`;
+      progressBar.style.width = `${Math.min(100, pct)}%`;
+
+      const diffPct = Math.abs(currentCal - targetCalories) / targetCalories;
+
+      if (diffPct <= 0.10) {
+        progressBar.className = "bg-emerald-600 h-2.5 rounded-full transition-all duration-300";
+        badge.className = "text-[11px] mt-2 font-bold text-center text-emerald-700";
+        badge.innerText = "✓ Perfect Meal Target Match!";
+      } else if (currentCal < targetCalories) {
+        progressBar.className = "bg-amber-500 h-2.5 rounded-full transition-all duration-300";
+        badge.className = "text-[11px] mt-2 font-bold text-center text-amber-700";
+        badge.innerText = `Below Target (-${targetCalories - currentCal} kcal)`;
+      } else {
+        progressBar.className = "bg-rose-500 h-2.5 rounded-full transition-all duration-300";
+        badge.className = "text-[11px] mt-2 font-bold text-center text-rose-600";
+        badge.innerText = `Exceeds Target (+${currentCal - targetCalories} kcal)`;
+      }
+    }
+
+    // --- 8. MODAL CONTROLS ---
+    function openCalcModal() {
+      document.getElementById('calcModal').classList.remove('hidden');
+    }
+
+    function closeCalcModal() {
+      document.getElementById('calcModal').classList.add('hidden');
+    }
+
+    function resetMeal() {
+      selectMenu(currentMenu);
+    }
+
+    function checkoutOrder() {
+      const cal = document.getElementById('totalCalDisplay').innerText;
+      const orderListHtml = document.getElementById('orderItemsList').innerHTML;
+
+      document.getElementById('checkoutSummaryBox').innerHTML = `
+        <div class="text-emerald-700 font-extrabold mb-2">Total Energy: ${cal} kcal</div>
+        <div class="space-y-1">${orderListHtml}</div>
+      `;
+
+      document.getElementById('orderSuccessModal').classList.remove('hidden');
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('orderSuccessModal').classList.add('hidden');
+      resetMeal();
+    }
+  </script>
+</body>
+</html>
